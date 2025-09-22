@@ -7,7 +7,11 @@ const rateLimit = require('express-rate-limit');
 const cookieParser = require('cookie-parser');
 const { initializeOIDC } = require('./config/oidc');
 const authRoutes = require('./routes/auth');
+const adminRoutes = require('./routes/admin');
 const { errorHandler, notFound } = require('./middleware/errorHandler');
+const { checkSessionActivity, initializeSession } = require('./middleware/sessionManager');
+const { validateToken } = require('./controllers/authController');
+const { requireServiceAuth, checkServiceHealth, generateUserSessionToken } = require('./services/serviceAuth');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -37,9 +41,13 @@ app.use(session({
   cookie: {
     secure: process.env.NODE_ENV === 'production',
     httpOnly: true,
-    maxAge: 24 * 60 * 60 * 1000
+    maxAge: 30 * 60 * 1000 // 30 minutes
   }
 }));
+
+// Session management middleware
+app.use(initializeSession);
+app.use(checkSessionActivity);
 
 app.get('/', (req, res) => {
   res.json({
@@ -49,7 +57,12 @@ app.get('/', (req, res) => {
       login: '/auth/login',
       logout: '/auth/logout',
       profile: '/auth/profile',
-      dashboard: '/auth/dashboard'
+      dashboard: '/auth/dashboard',
+      admin: '/auth/admin',
+      userManagement: '/auth/user-management',
+      adminUsers: '/admin/users',
+      promoteUser: '/admin/user/:email/promote',
+      demoteUser: '/admin/user/:email/demote'
     }
   });
 });
@@ -65,7 +78,44 @@ app.get('/callback', require('./controllers/authController').callback);
 // Direct dashboard route
 app.get('/dashboard', require('./middleware/auth').requireAuth, require('./controllers/authController').getDashboard);
 
+// Service health check endpoint
+app.get('/health', (req, res) => {
+  res.json({
+    status: 'healthy',
+    timestamp: new Date().toISOString(),
+    services: {
+      auth: 'running',
+      session: 'active'
+    }
+  });
+});
+
+// Service-to-service authentication endpoint
+app.get('/auth/verify', requireServiceAuth, (req, res) => {
+  res.json({
+    valid: true,
+    service: req.service.service,
+    timestamp: new Date().toISOString()
+  });
+});
+
+// Generate user session token for other services
+app.post('/auth/service-token', require('./middleware/auth').requireAuth, (req, res) => {
+  try {
+    const { targetService } = req.body;
+    if (!targetService) {
+      return res.status(400).json({ error: 'targetService is required' });
+    }
+
+    const token = generateUserSessionToken(req.session.user, targetService);
+    res.json({ token, expiresIn: '30m' });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to generate service token' });
+  }
+});
+
 app.use('/auth', authRoutes);
+app.use('/admin', adminRoutes);
 
 app.use(notFound);
 app.use(errorHandler);

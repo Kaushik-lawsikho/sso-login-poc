@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node src/app.js",
     "dev": "nodemon src/app.js",
-    "test": "jest",
+    "test": "jest src/tests/",
+    "test:watch": "jest src/tests/ --watch",
     "dev:full": "node start-dev.js"
   },
   "keywords": ["sso", "authentication", "auth0", "oidc", "express"],
@@ -21,7 +22,8 @@
     "helmet": "^7.0.0",
     "cors": "^2.8.5",
     "express-rate-limit": "^6.10.0",
-    "cookie-parser": "^1.4.6"
+    "cookie-parser": "^1.4.6",
+    "node-fetch": "^2.7.0"
   },
   "devDependencies": {
     "nodemon": "^3.0.1",

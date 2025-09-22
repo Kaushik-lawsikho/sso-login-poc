@@ -1,0 +1,11 @@
+{
+  "admin@yourdomain.com": [
+    "admin",
+    "user"
+  ],
+  "superadmin@yourdomain.com": [
+    "admin",
+    "user",
+    "superadmin"
+  ]
+}
