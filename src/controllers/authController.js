@@ -1,7 +1,6 @@
 const { getClient } = require('../config/oidc');
 const jwt = require('jsonwebtoken');
 
-// Token refresh utility
 const refreshTokens = async (req, res, next) => {
   try {
     if (!req.session.user || !req.session.user.refreshToken) {
@@ -11,7 +10,6 @@ const refreshTokens = async (req, res, next) => {
     const client = getClient();
     const tokenSet = await client.refresh(req.session.user.refreshToken);
     
-    // Update session with new tokens
     req.session.user.accessToken = tokenSet.access_token;
     req.session.user.refreshToken = tokenSet.refresh_token || req.session.user.refreshToken;
     req.session.user.tokenExpiry = Date.now() + (tokenSet.expires_in * 1000);
@@ -20,7 +18,6 @@ const refreshTokens = async (req, res, next) => {
     next();
   } catch (error) {
     console.error('Token refresh failed:', error);
-    // Clear session if refresh fails
     req.session.destroy();
     return res.status(401).json({ 
       error: 'Token refresh failed',

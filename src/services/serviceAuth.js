@@ -73,7 +73,8 @@ const serviceRegistry = {
 const checkServiceHealth = async (serviceName) => {
   const service = serviceRegistry[serviceName];
   if (!service) {
-    throw new Error(`Service ${serviceName} not found in registry`);
+    console.warn(`Service ${serviceName} not found in registry`);
+    return false;
   }
 
   try {

@@ -18,7 +18,53 @@ router.use(requireAuth);
 router.use(validateToken);
 router.use(requireAdmin);
 
-// Get all users with admin role
+/**
+ * @swagger
+ * /admin/users:
+ *   get:
+ *     summary: Get all admin users
+ *     description: Returns a list of all users with admin privileges
+ *     tags: [Admin]
+ *     security:
+ *       - sessionAuth: []
+ *     responses:
+ *       200:
+ *         description: Admin users retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Admin users retrieved successfully
+ *                 users:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *                   description: List of admin user emails
+ *                 count:
+ *                   type: integer
+ *                   description: Number of admin users
+ *       401:
+ *         description: Authentication required
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       403:
+ *         description: Admin access required
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       500:
+ *         description: Failed to retrieve admin users
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 router.get('/users', (req, res) => {
   try {
     const adminUsers = getUsersWithRole('admin');

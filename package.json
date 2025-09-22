@@ -8,6 +8,8 @@
     "dev": "nodemon src/app.js",
     "test": "jest src/tests/",
     "test:watch": "jest src/tests/ --watch",
+    "test:coverage": "jest src/tests/ --coverage --coverageReporters=html --coverageReporters=text",
+    "test:ci": "jest src/tests/ --coverage --ci --watchAll=false",
     "dev:full": "node start-dev.js"
   },
   "keywords": ["sso", "authentication", "auth0", "oidc", "express"],
@@ -23,11 +25,14 @@
     "cors": "^2.8.5",
     "express-rate-limit": "^6.10.0",
     "cookie-parser": "^1.4.6",
-    "node-fetch": "^2.7.0"
+    "node-fetch": "^2.7.0",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.0"
   },
   "devDependencies": {
     "nodemon": "^3.0.1",
     "jest": "^29.6.2",
-    "supertest": "^6.3.3"
+    "supertest": "^6.3.3",
+    "jest-html-reporters": "^3.1.5"
   }
 }

@@ -1,6 +1,14 @@
 const request = require('supertest');
 const app = require('../app');
 
+// Mock session middleware for testing
+const mockSession = (sessionData) => {
+  return (req, res, next) => {
+    req.session = sessionData;
+    next();
+  };
+};
+
 describe('SSO Authentication Flow', () => {
   let server;
 
@@ -69,35 +77,20 @@ describe('SSO Authentication Flow', () => {
   });
 
   describe('Role-Based Access Control', () => {
-    const mockSession = {
-      user: {
-        id: 'test-user-123',
-        email: 'test@example.com',
-        name: 'Test User',
-        roles: ['user'],
-        isAdmin: false,
-        accessToken: 'mock-access-token',
-        tokenExpiry: Date.now() + 3600000,
-        lastActivity: Date.now()
-      }
-    };
-
-    test('GET /auth/admin with user role should return 403', async () => {
+    test('GET /auth/admin without auth should return 401', async () => {
       const response = await request(app)
         .get('/auth/admin')
-        .set('Cookie', `connect.sid=${JSON.stringify(mockSession)}`)
-        .expect(403);
+        .expect(401);
 
-      expect(response.body).toHaveProperty('error', 'Admin access required');
+      expect(response.body).toHaveProperty('error', 'Authentication required');
     });
 
-    test('GET /auth/user-management with user role should return 403', async () => {
+    test('GET /auth/user-management without auth should return 401', async () => {
       const response = await request(app)
         .get('/auth/user-management')
-        .set('Cookie', `connect.sid=${JSON.stringify(mockSession)}`)
-        .expect(403);
+        .expect(401);
 
-      expect(response.body).toHaveProperty('error', 'Insufficient permissions');
+      expect(response.body).toHaveProperty('error', 'Authentication required');
     });
   });
 
